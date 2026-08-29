@@ -30,14 +30,19 @@ Done so far:
 | | |
 | --- | --- |
 | `core/` | Domain models and the storage interfaces. Standard library only. |
+| `markdown/` | Markdown and front-matter handling: YAML, TOML and JSON blocks, parsed and serialized byte-exactly. |
 
 There is no released version and no stable API yet.
 
 ## Layout
 
 ```
-core/     the domain model and the interfaces every adapter implements
+core/      the domain model and the interfaces every adapter implements
+markdown/  Markdown files to and from core.Content, byte for byte
 ```
+
+`markdown` reads a document's front matter and writes it back unchanged unless a field
+actually changed, so a Git diff shows the edit and nothing else.
 
 `core` imports only the standard library, and a test enforces it: provider code will live in
 sibling packages that depend on `core`, never the other way round.

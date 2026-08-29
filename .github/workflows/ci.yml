@@ -33,6 +33,7 @@ jobs:
       - name: build, vet, format, test, lint
         run: |
           nix develop --command bash -euo pipefail -c '
+            git --version
             go build ./...
             go vet ./...
             unformatted=$(gofmt -l .)

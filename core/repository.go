@@ -16,8 +16,9 @@ import "context"
 // [ErrExists] if the path is already taken. Put with a non-empty
 // Content.Revision means update: it returns [ErrConflict] if the stored
 // revision differs and [ErrNotFound] if the document is gone. Put returns the
-// revision of the newly stored content, which is always different from the one
-// it replaced.
+// revision of the newly stored content. It differs from the revision it replaced
+// whenever the stored bytes differ; a Put whose bytes are identical to what is
+// stored changes nothing and returns the same revision.
 //
 // Delete is the deliberate asymmetry: a zero revision deletes unconditionally,
 // a non-empty one deletes only if it still matches. "Create a document that

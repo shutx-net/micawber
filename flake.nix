@@ -43,11 +43,23 @@
             # The usual lint gate. With no .golangci.yml yet it runs its own defaults;
             # add the config when there is code worth configuring it for.
             pkgs.golangci-lint
+            # Micawber drives *the user's* git rather than linking a Git library, so from
+            # the Git-backed content operations onward the test suite cannot run without a
+            # git binary, and a shell that cannot run the tests is not a dev shell. This
+            # one is pinned so those tests are reproducible across machines.
+            #
+            # It is a build-and-test dependency and nothing more. It is not, and must not
+            # become, an assumption about which git a deployed Micawber drives: that stays
+            # whatever is on the host's PATH, or whatever WithGitBinary names.
+            #
+            # The original reason for leaving it out still holds and is worth keeping: a
+            # nixpkgs git on PATH shadows the user's own, and with it the credential helper
+            # and ssh config that talking to a remote depends on. That is harmless here --
+            # the tests are hermetic and touch no remote -- and it becomes live again at
+            # the remote phase, where the answer is configuration rather than an empty
+            # shell.
+            pkgs.git
           ];
-
-          # No pkgs.git on purpose. Micawber is Git-native, but it drives *the user's*
-          # git: a nixpkgs git on PATH would shadow the credential helper and ssh config
-          # that its Git-backed content operations depend on.
 
           # Pin the toolchain to the one in this shell. Under the default GOTOOLCHAIN=auto
           # the go command downloads and runs a different Go whenever go.mod names a newer

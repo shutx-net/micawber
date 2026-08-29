@@ -51,8 +51,10 @@
 //     returns an error matching [ErrExists].
 //   - A non-empty Content.Revision means update. If the stored revision
 //     differs, Put returns [ErrConflict]; if the document is gone, [ErrNotFound].
-//   - Put returns the revision of the newly stored content, always different
-//     from the one it replaced.
+//   - Put returns the revision of the newly stored content. It differs from the
+//     revision it replaced whenever the stored bytes differ; a Put whose bytes
+//     are identical to what is stored changes nothing and returns the same
+//     revision.
 //
 // ContentRepository.Delete is deliberately asymmetric with Put. A zero
 // revision deletes unconditionally; a non-empty one deletes only while it

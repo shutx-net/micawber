@@ -1,0 +1,6 @@
+# direnv's per-directory state, including the GC root for the dev shell
+/.direnv/
+
+# nix build symlinks
+/result
+/result-*

@@ -1,0 +1,44 @@
+# Runs the checks the phase plans call "done": build, vet, format, tests with the race
+# detector, and lint. Everything runs inside the repository's own dev shell, so CI uses the
+# exact toolchain flake.nix pins rather than whatever the runner happens to ship.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      # One `nix develop` per step would re-evaluate the flake each time; entering once and
+      # running a script keeps the log readable and the toolchain resolved a single time.
+      - name: build, vet, format, test, lint
+        run: |
+          nix develop --command bash -euo pipefail -c '
+            go build ./...
+            go vet ./...
+            unformatted=$(gofmt -l .)
+            if [ -n "$unformatted" ]; then
+              echo "not gofmt-clean:"; echo "$unformatted"; exit 1
+            fi
+            go test -race ./...
+            golangci-lint run
+          '

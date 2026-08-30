@@ -31,6 +31,8 @@ Done so far:
 | --- | --- |
 | `core/` | Domain models and the storage interfaces. Standard library only. |
 | `markdown/` | Markdown and front-matter handling: YAML, TOML and JSON blocks, parsed and serialized byte-exactly. |
+| `git/` | Content operations against a local Git repository, by driving the `git` binary with plumbing commands. No Git library. |
+| `localfs/` | Asset storage in a local directory: atomic, durable writes and no metadata of its own. Standard library only. |
 
 There is no released version and no stable API yet.
 
@@ -39,12 +41,21 @@ There is no released version and no stable API yet.
 ```
 core/      the domain model and the interfaces every adapter implements
 markdown/  Markdown files to and from core.Content, byte for byte
+git/       core.ContentRepository and core.ContentHistory over a local Git repository
+localfs/   core.AssetStore over a local filesystem directory
 ```
 
 `markdown` reads a document's front matter and writes it back unchanged unless a field
 actually changed, so a Git diff shows the edit and nothing else.
 
-`core` imports only the standard library, and a test enforces it: provider code will live in
+`git` drives the user's `git` binary rather than linking a Git library, so a repository
+Micawber writes stays an ordinary repository that ordinary `git` can read, and Micawber
+never holds a credential. It needs `git` installed; nothing else does.
+
+`localfs` keeps no index, sidecar or manifest: the directory is the whole store, so a file
+copied into it by hand is an object on exactly the same terms as one Micawber wrote.
+
+`core` imports only the standard library, and a test enforces it: provider code lives in
 sibling packages that depend on `core`, never the other way round.
 
 ## License

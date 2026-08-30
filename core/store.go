@@ -14,6 +14,8 @@ import (
 //
 // Implementations must honour ctx cancellation and return its error, and must
 // return errors that satisfy errors.Is against [ErrNotFound] and [ErrInvalid].
+// A store whose namespace is hierarchical may also return [ErrExists] when
+// something that is not an object occupies a key, or a prefix of one.
 // Nothing here exposes a public or signed URL: delivery, including any CDN, is
 // a separate concern from storage.
 type AssetStore interface {
@@ -22,10 +24,12 @@ type AssetStore interface {
 	// than in the Asset because an asset can be far larger than anything that
 	// belongs in a domain value.
 	//
-	// Put reads r to EOF. a.Size may be SizeUnknown, in which case the store
-	// discovers the length as it writes. Put overwrites an existing object at
-	// the same key: assets have no compare-and-swap, because the content
-	// repository is where concurrent editing happens.
+	// Put reads r to EOF when it succeeds. a.Size may be SizeUnknown, in which
+	// case the store discovers the length as it writes; when a.Size is a
+	// length, a store may stop reading once it knows the stream disagrees with
+	// it, so a failed Put does not guarantee r has been drained. Put overwrites
+	// an existing object at the same key: assets have no compare-and-swap,
+	// because the content repository is where concurrent editing happens.
 	Put(ctx context.Context, a Asset, r io.Reader) (AssetRef, error)
 
 	// Get opens the object at key for reading. The caller closes the returned
